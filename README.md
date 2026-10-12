@@ -49,9 +49,11 @@ docker compose up --build   # http://localhost:8080
 2. Choose **Public Repository** (or your connected GitHub App source) and paste
    the repo URL, branch `main`.
 3. **Build Pack: Dockerfile**. Port: `80`.
-4. Set the domain, e.g. `https://bubble.geekysquirrels.com` (DNS A-record must
-   already point to the Coolify server; Coolify's Traefik issues the Let's
-   Encrypt certificate automatically).
+4. Set the domain. If the DNS is proxied through **Cloudflare** (orange cloud),
+   enter it as `http://bubble.example.com` and leave "Redirect HTTP to HTTPS"
+   off — Cloudflare terminates TLS, and an `https://` domain here causes a
+   redirect loop. Without Cloudflare, use `https://…` and Coolify's Traefik
+   issues the Let's Encrypt certificate automatically.
 5. **Deploy**. Every later push to `main` redeploys if the webhook / GitHub App
    is connected (Coolify → application → *Webhooks*).
 
