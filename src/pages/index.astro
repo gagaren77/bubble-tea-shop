@@ -1,0 +1,267 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import OpenStatus from '../components/OpenStatus.astro';
+import { shop } from '../data/shop';
+
+const tickerItems = shop.menu.flatMap((c) => c.items.map((i) => i.name));
+const mapEmbed = `https://www.google.com/maps?q=${encodeURIComponent(
+  `${shop.name}, ${shop.address.line1}, ${shop.address.city}, ${shop.address.state} ${shop.address.zip}`,
+)}&output=embed`;
+const todayIdx = new Date().getDay(); // only used for server-side fallback; JS refines it
+const gallery = shop.photos.gallery;
+---
+
+<Base>
+  <div id="top"></div>
+  <Nav />
+
+  <!-- HERO -->
+  <section class="bg-blush">
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 pb-20 pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pb-24 lg:pt-16">
+      <div>
+        <OpenStatus />
+        <h1 class="display mt-6 text-[clamp(2.9rem,8vw,6.4rem)] font-medium text-forest-deep">
+          Tea time,<br />on Grace Street.
+        </h1>
+        <p class="mt-6 max-w-[34rem] text-lg leading-relaxed text-cocoa/85 sm:text-xl">
+          {shop.tagline} Loose-leaf tea, real milk and jams made in house — a two-minute walk from the Addison Red Line.
+        </p>
+        <div class="mt-8 flex flex-wrap items-center gap-3">
+          <a
+            href={shop.orderUrl}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center rounded-full bg-forest px-6 py-3.5 text-base font-semibold text-cream hover:bg-forest-deep"
+            >{shop.orderLabel}</a
+          >
+          <a
+            href="#menu"
+            class="inline-flex items-center rounded-full bg-cream px-6 py-3.5 text-base font-semibold text-forest-deep ring-1 ring-forest/15 hover:bg-white"
+            >See the menu</a
+          >
+        </div>
+        <p class="mt-8 text-sm text-cocoa/70">
+          <span class="font-semibold text-cocoa">{shop.rating.value.toFixed(1)} ★</span> from {shop.rating.count} Google reviews
+          <span class="mx-2">·</span>
+          <a href={shop.mapsUrl} target="_blank" rel="noopener" class="underline decoration-cocoa/30 underline-offset-4 hover:text-rose">{shop.address.line1.split(',')[0]}</a>
+        </p>
+      </div>
+
+      <div class="relative mx-auto w-full max-w-[460px] lg:max-w-none">
+        <div class="cup relative aspect-[3/4] overflow-hidden bg-blush-deep shadow-[0_30px_60px_-30px_rgba(59,42,36,0.45)]">
+          <img
+            src={shop.photos.hero.src}
+            alt={shop.photos.hero.alt}
+            width="900"
+            height="1200"
+            class="h-full w-full object-cover"
+            fetchpriority="high"
+          />
+        </div>
+        <div class="absolute -bottom-6 left-0 w-[42%] rotate-[-4deg] overflow-hidden rounded-2xl border-4 border-cream shadow-lg sm:-left-8">
+          <img src={shop.photos.storefront.src} alt={shop.photos.storefront.alt} width="1200" height="900" class="aspect-[4/3] w-full object-cover" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER (menu board) -->
+  <div class="overflow-hidden bg-forest py-3 text-cream" aria-hidden="true">
+    <div class="ticker-track display-italic text-xl sm:text-2xl">
+      {[0, 1].map(() => (
+        <div class="flex shrink-0">
+          {tickerItems.map((n) => (
+            <span class="px-6">
+              {n}<span class="ml-6 inline-block h-2 w-2 rounded-full bg-blush align-middle"></span>
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- MENU -->
+  <section id="menu" class="scroll-mt-20 bg-cream">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-20 lg:py-28">
+      <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <h2 class="display text-[clamp(2.4rem,5.5vw,4.2rem)] font-medium text-forest-deep">What to order</h2>
+        <p class="max-w-md text-base text-cocoa/75">
+          Every drink can be hot or iced, with your sweetness and ice level. Add boba, jelly or cream cap.
+          <span class="boba mt-2 block">Customer favorites from reviews.</span>
+        </p>
+      </div>
+
+      <div class="mt-14 grid gap-x-14 gap-y-14 md:grid-cols-2">
+        {shop.menu.map((cat) => (
+          <div>
+            <h3 class="display-italic text-3xl text-rose">{cat.category}</h3>
+            {cat.note && <p class="mt-2 text-sm text-cocoa/65">{cat.note}</p>}
+            <ul class="mt-6 divide-y divide-cocoa/10">
+              {cat.items.map((it) => (
+                <li class="flex items-baseline justify-between gap-4 py-3.5">
+                  <div>
+                    <p class:list={['text-[17px] font-semibold text-cocoa', { boba: it.favorite }]}>{it.name}</p>
+                    <p class="mt-0.5 text-[15px] text-cocoa/70">{it.desc}</p>
+                  </div>
+                  <span class="shrink-0 font-display text-lg text-cocoa">${it.price}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <p class="mt-12 text-sm text-cocoa/60">
+        Prices from the online ordering menu; in-store may be a little lower. Seasonal specials, soft serve and pastries rotate — ask at the counter.
+      </p>
+    </div>
+  </section>
+
+  <!-- PHOTOS -->
+  <section id="photos" class="scroll-mt-20 bg-mist">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-20 lg:py-28">
+      <h2 class="display text-[clamp(2.4rem,5.5vw,4.2rem)] font-medium text-forest-deep">Inside the shop</h2>
+      <p class="mt-4 max-w-xl text-base text-cocoa/75">Photos shared by customers on Google.</p>
+
+      <div class="mt-12 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4 md:auto-rows-[220px] lg:auto-rows-[260px]">
+        {gallery.map((p, i) => (
+          <figure
+            class:list={[
+              'overflow-hidden rounded-2xl bg-blush-deep',
+              i === 0 && 'md:col-span-2 md:row-span-2',
+              i === 4 && 'md:row-span-2',
+            ]}
+          >
+            <img src={p.src} alt={p.alt} width="900" height="1200" loading="lazy" class="h-full w-full object-cover aspect-[3/4] md:aspect-auto" />
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT + REVIEWS -->
+  <section id="about" class="scroll-mt-20 bg-blush">
+    <div class="mx-auto grid max-w-7xl gap-14 px-4 sm:px-6 py-20 lg:grid-cols-2 lg:py-28">
+      <div>
+        <h2 class="display text-[clamp(2.4rem,5.5vw,4.2rem)] font-medium text-forest-deep">A small shop with a big welcome</h2>
+        <div class="mt-8 space-y-5 text-lg leading-relaxed text-cocoa/85">
+          {shop.about.map((p) => <p>{p}</p>)}
+        </div>
+        <a
+          href={shop.instagramUrl}
+          target="_blank"
+          rel="noopener"
+          class="mt-8 inline-flex items-center gap-2 rounded-full bg-cream px-5 py-3 font-semibold text-forest-deep ring-1 ring-forest/15 hover:bg-white"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>
+          @{shop.instagram}
+        </a>
+      </div>
+
+      <div class="flex flex-col justify-center gap-6">
+        {shop.reviews.map((r) => (
+          <blockquote class="rounded-3xl bg-cream px-7 py-6">
+            <p class="display-italic text-2xl text-cocoa">“{r.text}”</p>
+            <footer class="mt-3 text-sm text-cocoa/60">{r.who}</footer>
+          </blockquote>
+        ))}
+        <a href={shop.mapsUrl} target="_blank" rel="noopener" class="text-sm font-medium text-forest-deep underline decoration-forest/30 underline-offset-4 hover:text-rose">
+          Read all {shop.rating.count} reviews on Google
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISIT -->
+  <section id="visit" class="scroll-mt-20 bg-cream">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 py-20 lg:py-28">
+      <h2 class="display text-[clamp(2.4rem,5.5vw,4.2rem)] font-medium text-forest-deep">Come say hi</h2>
+
+      <div class="mt-12 grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+        <div class="space-y-10">
+          <div>
+            <h3 class="text-sm font-semibold text-cocoa/60">Address</h3>
+            <p class="mt-2 text-xl font-semibold text-cocoa">{shop.address.line1}</p>
+            <p class="text-xl text-cocoa">{shop.address.city}, {shop.address.state} {shop.address.zip}</p>
+            <p class="mt-1 text-base text-cocoa/70">{shop.address.neighborhood}</p>
+            <a href={shop.mapsUrl} target="_blank" rel="noopener" class="mt-3 inline-block font-medium text-forest-deep underline decoration-forest/30 underline-offset-4 hover:text-rose">Get directions</a>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-semibold text-cocoa/60">Phone</h3>
+            <a href={shop.phoneHref} class="mt-2 block text-xl font-semibold text-cocoa hover:text-rose">{shop.phone}</a>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-semibold text-cocoa/60">Instagram</h3>
+            <a href={shop.instagramUrl} target="_blank" rel="noopener" class="mt-2 block text-xl font-semibold text-cocoa hover:text-rose">@{shop.instagram}</a>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-semibold text-cocoa/60">Hours</h3>
+            <table class="mt-3 w-full max-w-sm text-[17px]" id="hours-table">
+              <tbody>
+                {shop.hours.map((h, i) => (
+                  <tr data-day={i} class:list={['border-b border-cocoa/10', i === todayIdx && 'font-semibold text-forest-deep']}>
+                    <th scope="row" class="py-2 text-left font-[inherit]">{h.day}</th>
+                    <td class="py-2 text-right">{h.open ? `${h.open} – ${h.close}` : 'Closed'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p class="mt-2 text-sm text-cocoa/60">Hours may differ on holidays.</p>
+          </div>
+
+          <a
+            href={shop.orderUrl}
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center rounded-full bg-forest px-6 py-3.5 text-base font-semibold text-cream hover:bg-forest-deep"
+            >{shop.orderLabel}</a
+          >
+        </div>
+
+        <div class="overflow-hidden rounded-3xl bg-mist min-h-[380px]">
+          <iframe
+            title={`Map to ${shop.name}`}
+            src={mapEmbed}
+            width="100%"
+            height="100%"
+            class="h-full min-h-[380px] w-full border-0"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen></iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-forest-deep text-cream/80">
+    <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:px-6 py-10 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p class="display-italic text-2xl text-cream">{shop.name}</p>
+        <p class="mt-1 text-sm">{shop.address.line1}, {shop.address.city}, {shop.address.state} {shop.address.zip}</p>
+        {shop.footerNote && <p class="mt-1 text-sm text-cream/60">{shop.footerNote}</p>}
+      </div>
+      <div class="flex flex-wrap gap-5 text-sm">
+        <a href={shop.phoneHref} class="hover:text-cream">{shop.phone}</a>
+        <a href={shop.instagramUrl} target="_blank" rel="noopener" class="hover:text-cream">Instagram</a>
+        <a href={shop.mapsUrl} target="_blank" rel="noopener" class="hover:text-cream">Google Maps</a>
+        <a href={shop.orderUrl} target="_blank" rel="noopener" class="hover:text-cream">Order</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Highlight today's row in the shop's time zone (the build server may be elsewhere).
+    const tz = document.getElementById('open-status')?.dataset.tz || 'America/Chicago';
+    const wd = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(new Date());
+    const idx = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(wd);
+    document.querySelectorAll<HTMLTableRowElement>('#hours-table tr').forEach((tr) => {
+      const on = Number(tr.dataset.day) === idx;
+      tr.classList.toggle('font-semibold', on);
+      tr.classList.toggle('text-forest-deep', on);
+    });
+  </script>
+</Base>

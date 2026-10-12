@@ -1,0 +1,71 @@
+---
+import '../styles/global.css';
+import { shop } from '../data/shop';
+
+const title = `${shop.name} — Bubble tea in ${shop.address.neighborhood.split(' · ')[0]}, ${shop.address.city}`;
+const ogImage = new URL(shop.photos.hero.src, shop.siteUrl).href;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CafeOrCoffeeShop',
+  name: shop.name,
+  alternateName: 'Tulip’s Tea on Tuesday',
+  description: shop.description,
+  url: shop.siteUrl,
+  telephone: shop.phone,
+  image: ogImage,
+  servesCuisine: 'Bubble tea',
+  priceRange: '$',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: shop.address.line1,
+    addressLocality: shop.address.city,
+    addressRegion: shop.address.state,
+    postalCode: shop.address.zip,
+    addressCountry: 'US',
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: shop.address.lat, longitude: shop.address.lng },
+  sameAs: [shop.instagramUrl, shop.mapsUrl],
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: shop.rating.value,
+    reviewCount: shop.rating.count,
+  },
+  openingHoursSpecification: shop.hours
+    .filter((h) => h.open)
+    .map((h) => ({
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: h.day,
+      opens: h.open,
+      closes: h.close,
+    })),
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={shop.description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={shop.siteUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={shop.description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:url" content={shop.siteUrl} />
+    <meta name="theme-color" content="#f7d2d7" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..700,0..100,0..1;1,9..144,400..700,0..100,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

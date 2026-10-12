@@ -1,0 +1,77 @@
+---
+import { shop } from '../data/shop';
+const links = [
+  { href: '#menu', label: 'Menu' },
+  { href: '#photos', label: 'Photos' },
+  { href: '#about', label: 'About' },
+  { href: '#visit', label: 'Visit' },
+];
+---
+
+<header class="sticky top-0 z-40 bg-blush/90 backdrop-blur-md border-b border-blush-deep/60">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 py-3">
+    <a href="#top" class="display-italic text-2xl sm:text-[1.7rem] text-forest-deep font-semibold">
+      {shop.shortName}
+    </a>
+
+    <nav aria-label="Sections" class="hidden md:flex items-center gap-7 text-[15px] font-medium text-cocoa">
+      {links.map((l) => <a href={l.href} class="hover:text-rose">{l.label}</a>)}
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a
+        href={shop.phoneHref}
+        class="hidden sm:inline-flex items-center rounded-full px-4 py-2 text-[15px] font-medium text-forest-deep hover:bg-blush-deep/60"
+        >{shop.phone}</a
+      >
+      <a
+        href={shop.orderUrl}
+        target="_blank"
+        rel="noopener"
+        class="inline-flex items-center rounded-full bg-forest px-4 sm:px-5 py-2.5 text-[15px] font-semibold text-cream hover:bg-forest-deep"
+        >Order pickup</a
+      >
+      <button
+        id="menu-toggle"
+        type="button"
+        class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-blush-deep/60"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        aria-label="Open navigation"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-nav" aria-label="Sections" class="hidden md:hidden border-t border-blush-deep/60 bg-blush px-4 pb-4 pt-2">
+    <ul class="flex flex-col text-lg font-medium">
+      {links.map((l) => (
+        <li>
+          <a href={l.href} class="block py-2.5">{l.label}</a>
+        </li>
+      ))}
+      <li>
+        <a href={shop.phoneHref} class="block py-2.5 text-forest-deep">Call {shop.phone}</a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const btn = document.getElementById('menu-toggle');
+  const nav = document.getElementById('mobile-nav');
+  btn?.addEventListener('click', () => {
+    const open = nav!.classList.toggle('hidden') === false;
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+  });
+  nav?.querySelectorAll('a').forEach((a) =>
+    a.addEventListener('click', () => {
+      nav.classList.add('hidden');
+      btn?.setAttribute('aria-expanded', 'false');
+    }),
+  );
+</script>

@@ -1,0 +1,20 @@
+{
+  "name": "bubble-tea-shop-site",
+  "version": "1.0.0",
+  "description": "Modern one-page website for a bubble tea shop (Astro + Tailwind). Edit src/data/shop.ts to rebrand for a new shop.",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --host",
+    "build": "astro build",
+    "preview": "astro preview --host",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.0",
+    "astro": "^5.18.0",
+    "tailwindcss": "^4.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

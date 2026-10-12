@@ -1,0 +1,74 @@
+---
+/* Live "open now / opens at" pill. Hours + time zone come from shop.ts and are
+   passed to the browser as data attributes. Renders a neutral fallback for no-JS. */
+import { shop } from '../data/shop';
+---
+
+<span
+  id="open-status"
+  class="inline-flex items-center gap-2 rounded-full bg-cream/80 px-3.5 py-1.5 text-sm font-medium text-cocoa ring-1 ring-cocoa/10"
+  data-hours={JSON.stringify(shop.hours)}
+  data-tz={shop.timeZone}
+>
+  <span class="h-2 w-2 rounded-full bg-cocoa/30" data-dot></span>
+  <span data-text>Open daily — see hours</span>
+</span>
+
+<script>
+  const el = document.getElementById('open-status');
+  if (el) {
+    type H = { day: string; open: string | null; close: string | null };
+    const hours: H[] = JSON.parse(el.dataset.hours!);
+    const tz = el.dataset.tz!;
+    const dot = el.querySelector('[data-dot]') as HTMLElement;
+    const text = el.querySelector('[data-text]') as HTMLElement;
+
+    const toMin = (s: string) => {
+      const m = s.match(/(\d+):(\d+)\s*(AM|PM)/i)!;
+      let h = +m[1] % 12;
+      if (m[3].toUpperCase() === 'PM') h += 12;
+      return h * 60 + +m[2];
+    };
+    const short = (s: string) => s.replace(':00', '').replace(' ', ' ').toLowerCase();
+
+    const update = () => {
+      const now = new Date();
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        weekday: 'short',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false,
+      }).formatToParts(now);
+      const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
+      const dayIdx = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(get('weekday'));
+      const nowMin = (+get('hour') % 24) * 60 + +get('minute');
+      const today = hours[dayIdx];
+
+      if (today.open && today.close && nowMin >= toMin(today.open) && nowMin < toMin(today.close)) {
+        const left = toMin(today.close) - nowMin;
+        dot.className = 'h-2 w-2 rounded-full bg-green-600';
+        text.textContent = left <= 30 ? `Open now · closing soon (${short(today.close)})` : `Open now · until ${short(today.close)}`;
+        return;
+      }
+      // find next opening
+      for (let i = 0; i < 7; i++) {
+        const idx = (dayIdx + i) % 7;
+        const h = hours[idx];
+        if (!h.open) continue;
+        if (i === 0 && nowMin < toMin(h.open)) {
+          dot.className = 'h-2 w-2 rounded-full bg-rose';
+          text.textContent = `Closed · opens today at ${short(h.open)}`;
+          return;
+        }
+        if (i > 0) {
+          dot.className = 'h-2 w-2 rounded-full bg-rose';
+          text.textContent = `Closed · opens ${i === 1 ? 'tomorrow' : h.day} at ${short(h.open)}`;
+          return;
+        }
+      }
+    };
+    update();
+    setInterval(update, 60_000);
+  }
+</script>
